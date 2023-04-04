@@ -19,15 +19,33 @@ const LOG_EVENT_MONSTER_ATTACK = 'MONSTER_ATTACK';
 const LOG_EVENT_GAME_OVER = 'GAME_OVER';
 const LOG_EVENT_PLAYER_OUT_OF_STAMINA = 'OUT_OF_STAMINA';
 
-const enteredValue = prompt('Set max health for player and monster', '100');
+let chosenMaxLife;
 
-let chosenMaxLife = parseInt(enteredValue);
-let battleLog = [];
+function getMaxHealthValues() {
+    const enteredValue = prompt('Set max health for player and monster', '100');
+    const parsedValue = parseInt(enteredValue);
 
-if (isNaN(chosenMaxLife) || chosenMaxLife <= 0) {
-    chosenMaxLife = 100;
-    alert(`Entered value is not a correct number, we have set it to default ${chosenMaxLife}.`);
+    if (isNaN(parsedValue) || parsedValue <= 0) {
+        // using throw functionality, we can add message to console log
+        throw {message: 'Invalid user input - not a number. Default values of 100 are set.'}
+        // without try-catch sequence we might "fix" user misake as follows
+        // chosenMaxLife = 100;
+        // alert(`Entered value is not a correct number, we have set it to default ${chosenMaxLife}.`);
+    }
+    return parsedValue;
 }
+
+// try-catch sequence is initialized as user input might be invalid
+try {
+    chosenMaxLife = getMaxHealthValues();
+} catch (error) {
+    console.log(error);
+    chosenMaxLife = 100;
+    alert('You entered wrong value, health has been set to 100.')
+}
+
+let battleLog = [];
+let lastLoggedEntry;
 
 let currentMonsterHealth = chosenMaxLife;
 let currentPlayerHealth = chosenMaxLife;
@@ -60,7 +78,6 @@ function writeToLog(event, value, monsterHealth, playerHealth) {
     }
     
     // alternative option using IF statements
-
     // if (event === LOG_EVENT_PLAYER_ATTACK) {
     //     logEntry.target = 'MONSTER';
     //     }
@@ -218,21 +235,29 @@ function healHandler() {
 
 function printLogHandler() {
 
-    // using for-in loop to save key-values pairs into the log
+    // using for-of loop to get key-values pairs from the log
     let i = 0;
     for (const logEntry of battleLog) {
-        console.log(`#${i}`);
-        for (const key in logEntry) {
-            console.log(`${key} => ${logEntry[key]}`);
+        if (!lastLoggedEntry && lastLoggedEntry !==0 || lastLoggedEntry < i) {
+            console.log(`#${i}`);
+            for (const key in logEntry) {
+                console.log(`${key} => ${logEntry[key]}`);
+            }
+            lastLoggedEntry = i;
+            break;
         }
         i++;
     }
 
-    // this could be done with for-of loop as well
+    // this can not be done using for-in loop as we are trying to access key-value pairs
+    // below is an attempt which is of course invalid
     // let i = 0;
-    // for (const logEntry of battleLog) {
-    //     console.log(logEntry);
-    //     console.log(i);
+    // for (const logEntry in battleLog) {
+    //     console.log(`#${i}`);
+    //     console.log(logEntry[i]);
+    //     for (const key in logEntry) {
+    //         console.log(`${key} => ${logEntry[key]}`);
+    //     }
     //     i++;
     // }
 
